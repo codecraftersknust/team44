@@ -2,7 +2,7 @@ import math
 import matplotlib.pyplot as plt
 from rplidar import RPLidar
 
-PORT = '/dev/ttyUSB0'
+PORT = '/dev/ttyUSB1'
 lidar = RPLidar(PORT)
 
 # Init matplotlib
@@ -33,7 +33,7 @@ try:
         ax.set_theta_zero_location('N')
         ax.set_theta_direction(-1)
         ax.set_rlim(0, 3000)
-        ax.plot(angles, distances, 'go', markersize=2)
+        ax.plot(angles, distances, 'go', markersize=1)
         plt.pause(0.01)
 
 except KeyboardInterrupt:
