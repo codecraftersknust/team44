@@ -22,7 +22,7 @@ Our team consists of 3 members and a coach, we are Team44 from Ghana. This is ou
 
 - **Jonathan Darko Adoo** from [Kwame Nkrumah University of Science and Technology](https://www.knust.edu.gh/)
    - adoojonathan@outlook.com
-- **Michael Awinnereba Nkema** from [Kwame Nkrumah University of Science and Technology](https://www.knust.edu.gh/)
+- **Michael Awinneriba Nkema** from [Kwame Nkrumah University of Science and Technology](https://www.knust.edu.gh/)
    - nkemamichael1105@gmail.com
 
 > Coach
@@ -49,4 +49,4 @@ Our team maintained consistent progress by meeting *weekly after lectures and so
 This project pushed us to our limits, but seeing how much we've accomplished *fills us with pride and excitement* for what's next. Through countless hours of problem-solving, *we gained hands-on experience with various communication protocols, hardware integration, and complex system design.* Every challenge became an opportunity to learn, and every setback taught us something new. *While the road was tough*, the knowledge we've gained and the skills we've developed made every moment worthwhile. We're walking away not just with a functional robot, but with **invaluable engineering experience** that will serve us far beyond this competition.
 
 ## Special Thanks
-We are deeply grateful to the **Responsible AI Lab** at KNUST for their generous funding and equipment support that made this project possible. Our sincere appreciation also goes to the KNUST **College of Engineering Innovation Center** for providing us with workspace and resources for our practice sessions. We'd like to thank the **Center for Scientific and Industrial Research - Institute for Scientific and Technological Information** for their invaluable guidance and support throughout this journey. Finally, we couldn't have done this without the patience and encouragement of our **friends and families**, who supported us through countless late nights and tolerated our robot taking over their spaces.
+We are deeply grateful to the **Responsible AI Lab** at KNUST for their generous funding and equipment support that made this project possible. Our sincere appreciation also goes to the KNUST **College of Engineering Innovation Center** for providing us with workspace and resources for our practice sessions. We'd like to thank the **Council for Scientific and Industrial Research - Institute for Scientific and Technological Information** for their invaluable guidance and support throughout this journey. Finally, we couldn't have done this without the patience and encouragement of our **friends and families**, who supported us through countless late nights and tolerated our robot taking over their spaces.
