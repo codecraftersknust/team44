@@ -1,4 +1,3 @@
-
 import pyrealsense2 as rs
 import numpy as np
 import cv2
@@ -40,12 +39,12 @@ try:
                 orange_count += 1
                 last_detect_time = time.time()
                 orange_detected = True
-                print(f"🟧 Orange line detected! Count: {orange_count}")
+                print(f"Orange line detected! Count: {orange_count}")
 
                 if orange_count == 4:
                     lap_count += 1
                     orange_count = 0
-                    print(f"🏁 Lap completed! Total laps: {lap_count}")
+                    print(f"Lap completed! Total laps: {lap_count}")
         else:
             orange_detected = False
 

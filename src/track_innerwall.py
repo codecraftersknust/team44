@@ -24,9 +24,15 @@ STEERING_MIN = 45
 STEERING_CENTER = 90
 STEERING_MAX = 135
 
+BASE_THROTTLE = 1650
+
 # Create lidar and serial objects
 lidar = RPLidar(PORT)
 ser = serial.Serial(SERIAL_PORT, BAUD_RATE, timeout=1)
+
+def send_to_arduino(throttle, steer):
+    cmd = f"<THROTTLE:{int(throttle)}><STEER:{int(steer)}>"
+    ser.write(cmd.encode())
 
 def average_distance(scan, angle_range):
     readings = [
@@ -50,11 +56,10 @@ try:
     for scan in lidar.iter_scans():
         # Get average distances to left and right walls
         left_dist = average_distance(scan, (265, 310))  # LEFT
-        right_dist = average_distance(scan, (50, 95))  # RIGHT
 
-        if left_dist is not None and right_dist is not None:
+        if left_dist is not None:
             # Error = how far off center the car is (+ = too close to right)
-            error = left_dist - right_dist 
+            error = left_dist - 150
 
             control, integral = pid_control(error, prev_error, integral, Kp, Ki, Kd, dt)
             prev_error = error
@@ -66,11 +71,12 @@ try:
             steering_angle = max(min(steering_angle, STEERING_MAX), STEERING_MIN)
 
             # Send steering command to Arduino
-            cmd = f"S:{steering_angle:.2f}\n"
-            ser.write(cmd.encode())
+            steer = STEERING_CENTER + (control / 500.0) * (STEERING_MAX - STEERING_CENTER)
+            steer = max(min(steer, STEERING_MAX), STEERING_MIN)
+            send_to_arduino(BASE_THROTTLE, steer)
 
             # Debug
-            print(f"Left: {left_dist:.1f}mm, Right: {right_dist:.1f}mm, Error: {error:.1f}, Steering: {steering_angle:.1f}")
+            print(f"Left: {left_dist:.1f}mm, Error: {error:.1f}, Steering: {steering_angle:.1f}")
 
         time.sleep(dt)
 
