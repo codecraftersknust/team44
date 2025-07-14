@@ -1,6 +1,7 @@
 # Preface
 
 ![Team Logo](logo.png)
+*Code Crafters team logo*
 
 This repository contains engineering materials of a self-driven vehicle's model participating in the WRO Future Engineers competition in the season 2025.
 
@@ -24,6 +25,8 @@ Our team consists of 3 members and a coach, we are Team44 from Ghana. This is ou
    - adoojonathan@outlook.com
 - **Michael Awinneriba Nkema** from [Kwame Nkrumah University of Science and Technology](https://www.knust.edu.gh/)
    - nkemamichael1105@gmail.com
+- **Afriyie Ofori Boachie** from [Kwame Nkrumah University of Science and Technology](https://www.knust.edu.gh/)
+   - afriyieoforiboachie@gmail.com
 
 > Coach
 
