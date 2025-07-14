@@ -6,7 +6,6 @@ import serial
 from rplidar import RPLidar
 
 # ---------- Configuration ----------
-# Devices
 REALSENSE_RES = (640, 480)
 LIDAR_PORT = '/dev/ttyUSB1'
 ARDUINO_PORT = '/dev/ttyUSB0'
@@ -31,16 +30,12 @@ BASE_THROTTLE = 1650
 STOP_THROTTLE = 1500
 
 # ---------- Setup ----------
-# RealSense camera setup
 pipeline = rs.pipeline()
 config = rs.config()
-config.enable_stream(rs.stream.color, 640, 480, rs.format.bgr8, 30)
+config.enable_stream(rs.stream.color, *REALSENSE_RES, rs.format.bgr8, 30)
 pipeline.start(config)
 
-# LIDAR
 lidar = RPLidar(LIDAR_PORT)
-
-# Serial to Arduino
 ser = serial.Serial(ARDUINO_PORT, BAUD_RATE, timeout=1)
 time.sleep(2)
 
@@ -57,33 +52,27 @@ def send_to_arduino(throttle, steer):
     cmd = f"<THROTTLE:{int(throttle)}><STEER:{int(steer)}>"
     ser.write(cmd.encode())
 
-def detect_orange_line(frame):
+def check_lap(frame):
+    """Update lap count if orange is detected in frame bottom region."""
+    global orange_detected, last_detect_time, orange_count, lap_count
+
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-    roi = hsv[frame.shape[0] - 80:frame.shape[0], :]  # Bottom portion of frame
+    roi = hsv[frame.shape[0] - 80:, :]
     mask = cv2.inRange(roi, ORANGE_LOW, ORANGE_HIGH)
-    return np.sum(mask) > THRESHOLD
+    pixel_count = np.sum(mask > 0)
 
-    while True:
-        frames = pipeline.wait_for_frames()
-        color_frame = frames.get_color_frame()
-        if not color_frame:
-            continue
-
-        frame = np.asanyarray(color_frame.get_data())
-
-        if detect_orange_line(frame):
-            if not orange_detected and time.time() - last_detect_time > 2:
-                orange_count += 1
-                last_detect_time = time.time()
-                orange_detected = True
-                print(f"Orange line detected! Count: {orange_count}")
-
-                if orange_count == 4:
-                    lap_count += 1
-                    orange_count = 0
-                    print(f"Lap completed! Total laps: {lap_count}")
-        else:
-            orange_detected = False
+    if pixel_count > THRESHOLD:
+        if not orange_detected and (time.time() - last_detect_time) > 2:
+            orange_detected = True
+            last_detect_time = time.time()
+            orange_count += 1
+            print(f"Orange detected! Count: {orange_count}")
+            if orange_count == 4:
+                lap_count += 1
+                orange_count = 0
+                print(f"Lap completed! Total laps: {lap_count}")
+    else:
+        orange_detected = False
 
 def average_distance(scan, angle_range):
     readings = [
@@ -104,25 +93,23 @@ try:
     print("Starting navigation loop...")
 
     for scan in lidar.iter_scans():
-        # Read RealSense frame
+        # Get RealSense frame and update lap count
         frames = pipeline.wait_for_frames()
         color_frame = frames.get_color_frame()
         if not color_frame:
             continue
         color_img = np.asanyarray(color_frame.get_data())
-        detect_orange_line(color_img)
+        check_lap(color_img)
 
         if lap_count >= 3:
-            print("Lap goal reached. Stopping robot.")
+            print("Lap goal reached. Stopping.")
             send_to_arduino(STOP_THROTTLE, STEERING_CENTER)
             break
 
-        # Wall following with LIDAR
+        # Wall following (left-side)
         left = average_distance(scan, (265, 310))
-
         if left:
-            error = left - 150  # Desired distance from the wall
-
+            error = left - 150  # Target = 150 mm from wall
             control, integral = pid_control(error, prev_error, integral, Kp, Ki, Kd, dt)
             prev_error = error
 
@@ -131,9 +118,7 @@ try:
             steer = max(min(steer, STEERING_MAX), STEERING_MIN)
 
             send_to_arduino(BASE_THROTTLE, steer)
-
-            # Debug info
-            print(f"Left: {left:.1f}mm | Err: {error:.1f} | Steer: {steer:.1f} | Lap: {lap_count}")
+            print(f"Left: {left:.1f}mm | Err: {error:.1f} | Steer: {steer:.1f} | Laps: {lap_count}")
 
         time.sleep(dt)
 
@@ -146,4 +131,5 @@ finally:
     lidar.stop_motor()
     lidar.disconnect()
     ser.close()
+    pipeline.stop()
     cv2.destroyAllWindows()
