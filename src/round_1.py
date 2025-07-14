@@ -12,9 +12,8 @@ ARDUINO_PORT = '/dev/ttyUSB0'
 BAUD_RATE = 9600
 
 # HSV range for orange line detection
-ORANGE_LOW = np.array([10, 100, 100])
-ORANGE_HIGH = np.array([25, 255, 255])
-THRESHOLD = 30000  # Pixel count threshold for orange
+ORANGE_LOW = np.array([0, 55, 120])
+ORANGE_HIGH = np.array([10, 255, 255])
 
 # PID Constants
 Kp = 0.5
@@ -53,16 +52,15 @@ def send_to_arduino(throttle, steer):
     ser.write(cmd.encode())
 
 def check_lap(frame):
-    """Update lap count if orange is detected in frame bottom region."""
     global orange_detected, last_detect_time, orange_count, lap_count
 
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-    roi = hsv[frame.shape[0] - 80:, :]
+    roi = hsv[frame.shape[0] - 100:, :]
     mask = cv2.inRange(roi, ORANGE_LOW, ORANGE_HIGH)
     pixel_count = np.sum(mask > 0)
 
-    if pixel_count > THRESHOLD:
-        if not orange_detected and (time.time() - last_detect_time) > 2:
+    if pixel_count > 5000:
+        if not orange_detected and (time.time() - last_detect_time) > 0.5:
             orange_detected = True
             last_detect_time = time.time()
             orange_count += 1
@@ -70,7 +68,7 @@ def check_lap(frame):
             if orange_count == 4:
                 lap_count += 1
                 orange_count = 0
-                print(f"Lap completed! Total laps: {lap_count}")
+                print(f"Laps completed! Total laps: {lap_count}")
     else:
         orange_detected = False
 
@@ -102,7 +100,9 @@ try:
         check_lap(color_img)
 
         if lap_count >= 3:
-            print("Lap goal reached. Stopping.")
+            print("Lap goal reached. Slowing down and stopping...")
+            send_to_arduino(BASE_THROTTLE, steer)
+            time.sleep(1)
             send_to_arduino(STOP_THROTTLE, STEERING_CENTER)
             break
 
@@ -118,14 +118,16 @@ try:
             steer = max(min(steer, STEERING_MAX), STEERING_MIN)
 
             send_to_arduino(BASE_THROTTLE, steer)
-            print(f"Left: {left:.1f}mm | Err: {error:.1f} | Steer: {steer:.1f} | Laps: {lap_count}")
+            # print(f"Left: {left:.1f}mm | Err: {error:.1f} | Steer: {steer:.1f} | Laps: {lap_count}")
 
         time.sleep(dt)
 
 except KeyboardInterrupt:
+    send_to_arduino(STOP_THROTTLE, STEERING_CENTER)
     print("Interrupted by user.")
 
 finally:
+    send_to_arduino(STOP_THROTTLE, STEERING_CENTER)
     print("Shutting down...")
     lidar.stop()
     lidar.stop_motor()

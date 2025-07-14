@@ -10,8 +10,8 @@ config.enable_stream(rs.stream.color, 640, 480, rs.format.bgr8, 30)
 pipeline.start(config)
 
 # HSV range for orange (adjust based on lighting)
-ORANGE_LOW = np.array([10, 100, 100])
-ORANGE_HIGH = np.array([25, 255, 255])
+ORANGE_LOW = np.array([0, 55, 118])
+ORANGE_HIGH = np.array([53, 255, 255])
 THRESHOLD = 30000  # Minimum pixel count to detect orange
 
 lap_count = 0
